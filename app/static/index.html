@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic ML Operations Engineer — Incident Sandbox</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232563eb'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold' font-size='14'>ML</text></svg>" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Top Simulation & Safety Banner -->
+  <div class="simulation-banner" role="region" aria-label="Simulation Notice">
+    <div class="banner-inner">
+      <span class="sim-badge">LOCAL SANDBOX SIMULATION</span>
+      <span id="sim-notice-text">
+        All telemetry, Dagster runs, drift monitors, and remediation actions operate strictly on a local SQLite state store (<code>fraud-risk-v4</code>). State-changing actions require explicit human approval.
+      </span>
+      <div class="banner-actions">
+        <span id="provider-badge" class="meta-pill" title="Active Reasoning Provider">Provider: Mock</span>
+        <button id="btn-reset-sandbox" type="button" class="btn btn-secondary btn-xs" title="Reset simulated environment to initial baseline">
+          Reset Sandbox State
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Header & Primary Navigation -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-mark" aria-hidden="true">MLOps</div>
+        <div>
+          <h1 class="app-title">Agentic ML Operations Engineer</h1>
+          <p class="app-subtitle">Evidence-Grounded Pipeline &amp; Model Incident Investigation with Human-Gated Remediation</p>
+        </div>
+      </div>
+
+      <nav class="primary-nav" aria-label="Primary Views">
+        <div role="tablist" class="nav-tabs">
+          <button role="tab" id="tab-overview" aria-selected="true" aria-controls="view-overview" class="nav-tab active" data-view="overview">
+            1. Overview
+          </button>
+          <button role="tab" id="tab-investigation" aria-selected="false" aria-controls="view-investigation" class="nav-tab" data-view="investigation">
+            2. Incident Investigation
+            <span id="nav-incident-badge" class="tab-count">8</span>
+          </button>
+          <button role="tab" id="tab-system-map" aria-selected="false" aria-controls="view-system-map" class="nav-tab" data-view="system-map">
+            3. System Map
+          </button>
+          <button role="tab" id="tab-evaluation" aria-selected="false" aria-controls="view-evaluation" class="nav-tab" data-view="evaluation">
+            4. Evaluation Benchmark
+          </button>
+          <button role="tab" id="tab-audit" aria-selected="false" aria-controls="view-audit" class="nav-tab" data-view="audit">
+            5. Audit &amp; Observability
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Toast / Status Notification Area -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main Workspace -->
+  <main id="main-content" class="main-container">
+
+    <!-- ==================== VIEW 1: OVERVIEW ==================== -->
+    <section id="view-overview" role="tabpanel" aria-labelledby="tab-overview" class="view-panel active">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">Platform Telemetry &amp; Incident Overview</h2>
+          <p class="section-desc">Live snapshot of the simulated <code>fraud-risk-v4</code> ML pipeline, feature store SLAs, model quality, and active incidents.</p>
+        </div>
+        <div class="header-controls">
+          <button type="button" id="btn-refresh-overview" class="btn btn-secondary">Refresh Telemetry</button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Strip -->
+      <div id="overview-kpis" class="kpi-grid" aria-label="Platform Health Summary"></div>
+
+      <!-- Active Incidents Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Active Simulated Incidents</h3>
+          <span class="card-subtitle">Select any incident to inspect telemetry or launch the 8-stage agentic investigation</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="overview-incidents-table">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Severity</th>
+                <th scope="col">Status</th>
+                <th scope="col">Category</th>
+                <th scope="col">Affected Component</th>
+                <th scope="col">Incident Summary</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="overview-incidents-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Two-Column Telemetry Grid: Dagster Runs + Freshness/Drift -->
+      <div class="grid-two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3>Recent Dagster Pipeline &amp; Backfill Runs</h3>
+            <span class="card-subtitle">Materialization status and error codes</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Run ID</th>
+                  <th scope="col">Asset Key</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Duration</th>
+                  <th scope="col">Error / Diagnostic</th>
+                </tr>
+              </thead>
+              <tbody id="overview-runs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Data Freshness, Quality &amp; Feature Drift</h3>
+            <span class="card-subtitle">Partition completeness, schema contracts, and PSI drift</span>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Component</th>
+                  <th scope="col">Check Type</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Key Indicator</th>
+                </tr>
+              </thead>
+              <tbody id="overview-dq-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model & Service Health Row -->
+      <div class="grid-two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3>Model Quality Monitors</h3>
+            <span class="card-subtitle">Precision@Top5%, False Positive Rate, and Threshold Config</span>
+          </div>
+          <div id="overview-models-list" class="metric-card-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Realtime Scoring Service Health</h3>
+            <span class="card-subtitle">Latency SLOs, HTTP 5xx rates, and Redis feature cache saturation</span>
+          </div>
+          <div id="overview-services-list" class="metric-card-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: INCIDENT INVESTIGATION ==================== -->
+    <section id="view-investigation" role="tabpanel" aria-labelledby="tab-investigation" class="view-panel" hidden>
+      <div class="investigation-layout">
+        <!-- Left Sidebar: Incident Queue & Filters -->
+        <aside class="incident-queue-pane" aria-label="Incident Queue">
+          <div class="queue-header">
+            <h2>Incident Queue</h2>
+            <div class="filter-row">
+              <label for="filter-severity" class="sr-only">Filter by Severity</label>
+              <select id="filter-severity" class="select-input">
+                <option value="ALL">All Severities</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+              </select>
+
+              <label for="filter-status" class="sr-only">Filter by Status</label>
+              <select id="filter-status" class="select-input">
+                <option value="ALL">All Statuses</option>
+                <option value="OPEN">Open</option>
+                <option value="AWAITING_APPROVAL">Awaiting Approval</option>
+                <option value="ABSTAINED">Abstained</option>
+                <option value="REMEDIATED">Remediated</option>
+              </select>
+            </div>
+          </div>
+          <div id="incident-queue-list" class="queue-list" role="list"></div>
+        </aside>
+
+        <!-- Right Main Pane: Incident Detail, Workflow Progress, Diagnosis & Human Approval Gate -->
+        <div class="incident-detail-pane" id="incident-detail-container">
+          <div class="empty-state">Select an incident from the queue to inspect its telemetry and run the investigation workflow.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: SYSTEM MAP ==================== -->
+    <section id="view-system-map" role="tabpanel" aria-labelledby="tab-system-map" class="view-panel" hidden>
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">Architecture &amp; Lineage Dataflow Map (<code>fraud-risk-v4</code>)</h2>
+          <p class="section-desc">Interactive topology showing upstream sources, Dagster assets, online features, models, serving, and monitors. Uses distinct badges, borders, and patterns alongside color for accessibility.</p>
+        </div>
+        <div class="header-controls">
+          <label for="map-incident-select" class="control-label">Highlight Incident Blast Radius:</label>
+          <select id="map-incident-select" class="select-input"></select>
+        </div>
+      </div>
+
+      <div class="map-legend" aria-label="Topology Legend">
+        <span class="legend-item"><span class="legend-swatch swatch-primary"></span> Primary Affected Component</span>
+        <span class="legend-item"><span class="legend-swatch swatch-upstream"></span> Upstream Contributing Source/Asset</span>
+        <span class="legend-item"><span class="legend-swatch swatch-downstream"></span> Downstream Blast Radius</span>
+        <span class="legend-item"><span class="legend-swatch swatch-healthy"></span> Healthy Component</span>
+      </div>
+
+      <div class="system-map-layout">
+        <div id="system-map-canvas" class="system-map-canvas" role="region" aria-label="Pipeline Lineage Diagram"></div>
+        <aside id="system-map-inspector" class="system-map-inspector" aria-label="Component Inspector">
+          <div class="card">
+            <div class="card-header">
+              <h3>Component Inspector</h3>
+            </div>
+            <div id="map-node-detail" class="inspector-body">
+              <p class="muted-text">Click or press Enter on any node in the architecture map to inspect its upstream/downstream lineage, SLA lag, and telemetry.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: EVALUATION BENCHMARK ==================== -->
+    <section id="view-evaluation" role="tabpanel" aria-labelledby="tab-evaluation" class="view-panel" hidden>
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">Reproducible Local Incident Benchmark</h2>
+          <p class="section-desc">Actual measured outcomes from executing the 8-case synthetic benchmark suite against the local orchestrator. No invented metrics or external benchmark claims.</p>
+        </div>
+        <div class="header-controls">
+          <button type="button" id="btn-run-benchmark" class="btn btn-primary">
+            Run Local Benchmark Now
+          </button>
+        </div>
+      </div>
+
+      <div id="eval-kpis" class="kpi-grid"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Per-Case Measured Outcomes</h3>
+          <span id="eval-run-meta" class="card-subtitle"></span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="eval-cases-table">
+            <thead>
+              <tr>
+                <th scope="col">Case ID</th>
+                <th scope="col">Scenario &amp; Incident</th>
+                <th scope="col">Expected Outcome</th>
+                <th scope="col">Agent Diagnosis</th>
+                <th scope="col">Grounded</th>
+                <th scope="col">Safety / Abstention</th>
+                <th scope="col">Tools &amp; Latency</th>
+                <th scope="col">Detailed Explanation</th>
+              </tr>
+            </thead>
+            <tbody id="eval-cases-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Benchmark Metric Definitions</h3>
+          <span class="card-subtitle">How each evaluation metric is computed in <code>app/eval/runner.py</code></span>
+        </div>
+        <div id="eval-definitions-grid" class="definitions-grid"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: AUDIT & OBSERVABILITY ==================== -->
+    <section id="view-audit" role="tabpanel" aria-labelledby="tab-audit" class="view-panel" hidden>
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">Audit Log &amp; Agent Tool Trace Observability</h2>
+          <p class="section-desc">Chronological, tamper-evident record of investigations, narrow tool executions, prompt-injection quarantines, human approval decisions, and simulated actions.</p>
+        </div>
+        <div class="header-controls">
+          <label for="audit-incident-filter" class="control-label">Incident Filter:</label>
+          <select id="audit-incident-filter" class="select-input">
+            <option value="ALL">All Incidents</option>
+          </select>
+          <button type="button" id="btn-refresh-audit" class="btn btn-secondary">Refresh Logs</button>
+        </div>
+      </div>
+
+      <div class="grid-two-col">
+        <div class="card">
+          <div class="card-header">
+            <h3>Chronological Governance &amp; Approval Audit Log</h3>
+            <span class="card-subtitle">Every state transition, human sign-off, and blocked policy violation</span>
+          </div>
+          <div id="audit-events-list" class="audit-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Agent Tool Call Trace Inspector</h3>
+            <span class="card-subtitle">Typed inputs, execution latency, evidence IDs, and structured outputs (zero secrets)</span>
+          </div>
+          <div id="audit-traces-list" class="audit-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

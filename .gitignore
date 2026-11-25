@@ -1,0 +1,28 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Environment variables & secrets (NEVER commit)
+.env
+.env.local
+.env.*.local
+
+# Python cache & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Local SQLite database runtime state
+data/*.db
+data/*.db-journal
+data/*.db-wal
+
+# OS files
+.DS_Store
+Thumbs.db
+
